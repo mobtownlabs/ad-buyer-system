@@ -99,6 +99,12 @@ python -m ad_buyer.interfaces.api.main
 
 ## Client Usage Examples
 
+> **Runnable examples**: See the `examples/` folder for complete, runnable scripts:
+> - `basic_mcp_usage.py` - MCP protocol basics
+> - `natural_language_a2a.py` - A2A natural language queries
+> - `protocol_switching.py` - Switching protocols on-the-fly
+> - `individual_clients.py` - Using IABMCPClient and A2AClient directly
+
 ### Using the Unified Client (Recommended)
 
 ```python
@@ -218,6 +224,12 @@ The IAB server provides 33 OpenDirect tools:
 
 ```
 ad_buyer_system/
+├── examples/            # Runnable example scripts
+│   ├── basic_mcp_usage.py
+│   ├── natural_language_a2a.py
+│   ├── protocol_switching.py
+│   ├── individual_clients.py
+│   └── campaign_brief.json
 ├── src/ad_buyer/
 │   ├── agents/           # CrewAI agents (Portfolio Manager, Channel Specialists)
 │   │   ├── level1/       # Portfolio Manager
