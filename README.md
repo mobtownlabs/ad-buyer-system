@@ -63,7 +63,7 @@ CrewAI-based advertising buyer agent using IAB OpenDirect 2.1 standards and the 
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/ad-buyer-system.git
+git clone https://github.com/mobtownlabs/ad-buyer-system.git
 cd ad-buyer-system
 
 # Install dependencies
