@@ -57,6 +57,14 @@ CrewAI-based advertising buyer agent using IAB OpenDirect 2.1 standards and the 
         └─────────────────────────────────────┘
 ```
 
+## Prerequisites
+
+- **Python 3.11+**
+- **Anthropic API key** - Required for CrewAI agents ([get one here](https://console.anthropic.com/))
+- **Internet access** - The system connects to IAB Tech Lab's hosted agentic-direct server by default
+
+> **Note**: You do **not** need to install the [IAB Tech Lab agentic-direct](https://github.com/InteractiveAdvertisingBureau/agentic-direct) server locally. This system connects to their hosted instance at `https://agentic-direct-server-hwgrypmndq-uk.a.run.app` which provides the OpenDirect 2.1 API via MCP and A2A protocols.
+
 ## Quick Start
 
 ### Installation
