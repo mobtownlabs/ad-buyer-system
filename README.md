@@ -9,14 +9,16 @@ The Ad Buyer System lets you:
 - **Automate media buying** with AI agents that understand your campaign goals and budget
 - **Search and discover inventory** across publishers using natural language or structured queries
 - **Book deals programmatically** via IAB OpenDirect 2.1 protocol
+- **Obtain Deal IDs for DSP activation** - present buyer identity (agency, advertiser) to unlock tiered pricing, then get Deal IDs for activation in The Trade Desk, DV360, Amazon DSP, and other platforms
 - **Manage campaigns** through CLI, REST API, or conversational chat interface
 - **Connect to any OpenDirect-compliant seller** including the live IAB Tech Lab server
 
 ## Who Should Use This
 
-- **Media agencies** automating programmatic direct buying
-- **Advertisers** with in-house media teams
-- **Trading desks** looking to scale deal operations
+- **Media agencies** automating programmatic direct buying and leveraging identity-based tiered pricing
+- **Advertisers** with in-house media teams seeking better rates through direct seller relationships
+- **Trading desks** looking to scale deal operations and manage Deal IDs across multiple DSPs
+- **DSP operators** who need to discover inventory, negotiate pricing, and obtain Deal IDs for programmatic activation
 - **Anyone** wanting to experiment with agentic advertising workflows
 
 ---
