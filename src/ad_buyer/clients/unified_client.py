@@ -2,10 +2,13 @@
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 from .a2a_client import A2AClient, A2AResponse
 from .mcp_client import IABMCPClient, MCPToolResult
+
+if TYPE_CHECKING:
+    from ..models.buyer_identity import BuyerIdentity
 
 
 class Protocol(Enum):
@@ -83,6 +86,7 @@ class UnifiedClient:
         base_url: str = "https://agentic-direct-server-hwgrypmndq-uk.a.run.app",
         protocol: Protocol = Protocol.MCP,
         a2a_agent_type: str = "buyer",
+        buyer_identity: "Optional[BuyerIdentity]" = None,
     ):
         """Initialize the unified client.
 
@@ -90,10 +94,12 @@ class UnifiedClient:
             base_url: Base URL for the IAB server
             protocol: Default protocol to use (MCP or A2A)
             a2a_agent_type: Agent type for A2A ('buyer' or 'seller')
+            buyer_identity: Optional BuyerIdentity for tiered pricing access
         """
         self.base_url = base_url
         self.default_protocol = protocol
         self.a2a_agent_type = a2a_agent_type
+        self.buyer_identity = buyer_identity
 
         self._mcp_client: Optional[IABMCPClient] = None
         self._a2a_client: Optional[A2AClient] = None
@@ -382,4 +388,264 @@ class UnifiedClient:
             "create_assignment",
             {"lineId": line_id, "creativeId": creative_id},
             protocol=protocol,
+        )
+
+    # DSP-specific methods for discovery, pricing, and deal management
+
+    def set_buyer_identity(self, identity: "BuyerIdentity") -> None:
+        """Set the buyer identity for tiered pricing access.
+
+        Args:
+            identity: BuyerIdentity with seat/agency/advertiser info
+        """
+        self.buyer_identity = identity
+
+    def get_access_tier(self) -> str:
+        """Get the current access tier based on buyer identity.
+
+        Returns:
+            Access tier name ('public', 'seat', 'agency', 'advertiser')
+        """
+        if self.buyer_identity:
+            return self.buyer_identity.get_access_tier().value
+        return "public"
+
+    def _get_identity_context(self) -> dict[str, Any]:
+        """Get identity context for API calls.
+
+        Returns:
+            Dictionary with identity context to include in requests
+        """
+        if self.buyer_identity:
+            return self.buyer_identity.to_context_dict()
+        return {"access_tier": "public"}
+
+    async def discover_inventory(
+        self,
+        query: str = None,
+        channel: str = None,
+        max_cpm: float = None,
+        min_impressions: int = None,
+        targeting: list[str] = None,
+        publisher: str = None,
+        protocol: Protocol = None,
+    ) -> UnifiedResult:
+        """Discover available inventory with buyer identity context.
+
+        Queries sellers for available inventory, presenting the buyer's
+        identity to unlock tiered pricing and premium inventory access.
+
+        Args:
+            query: Natural language query (e.g., 'CTV inventory under $25 CPM')
+            channel: Channel filter ('ctv', 'display', 'video', 'mobile')
+            max_cpm: Maximum CPM price filter
+            min_impressions: Minimum available impressions filter
+            targeting: Required targeting capabilities
+            publisher: Specific publisher to search
+            protocol: Protocol to use for the request
+
+        Returns:
+            UnifiedResult with discovered inventory
+        """
+        # Build filters including identity context
+        filters = self._get_identity_context()
+        if channel:
+            filters["channel"] = channel
+        if max_cpm is not None:
+            filters["maxPrice"] = max_cpm
+        if min_impressions is not None:
+            filters["minImpressions"] = min_impressions
+        if targeting:
+            filters["targeting"] = targeting
+        if publisher:
+            filters["publisher"] = publisher
+
+        args = {"filters": filters}
+        if query:
+            args["query"] = query
+
+        # Try search_products first, fall back to list_products
+        if query:
+            return await self.call_tool("search_products", args, protocol=protocol)
+        else:
+            return await self.call_tool("list_products", protocol=protocol)
+
+    async def get_pricing(
+        self,
+        product_id: str,
+        volume: int = None,
+        deal_type: str = None,
+        flight_start: str = None,
+        flight_end: str = None,
+        protocol: Protocol = None,
+    ) -> UnifiedResult:
+        """Get tier-specific pricing for a product.
+
+        Retrieves pricing from sellers with prices adjusted based
+        on the buyer's revealed identity tier.
+
+        Args:
+            product_id: Product ID to get pricing for
+            volume: Requested impression volume (may unlock volume discounts)
+            deal_type: Deal type ('PG', 'PD', 'PA')
+            flight_start: Flight start date (YYYY-MM-DD)
+            flight_end: Flight end date (YYYY-MM-DD)
+            protocol: Protocol to use for the request
+
+        Returns:
+            UnifiedResult with pricing information
+        """
+        # Get product details
+        result = await self.get_product(product_id, protocol=protocol)
+
+        if not result.success:
+            return result
+
+        # Enhance result with tiered pricing calculation
+        if result.data and isinstance(result.data, dict):
+            base_price = result.data.get("basePrice", result.data.get("price", 0))
+            if isinstance(base_price, (int, float)) and self.buyer_identity:
+                discount = self.buyer_identity.get_discount_percentage()
+                tiered_price = base_price * (1 - discount / 100)
+
+                # Volume discount for agency/advertiser tiers
+                volume_discount = 0
+                tier = self.buyer_identity.get_access_tier().value
+                if volume and tier in ("agency", "advertiser"):
+                    if volume >= 10_000_000:
+                        volume_discount = 10.0
+                    elif volume >= 5_000_000:
+                        volume_discount = 5.0
+
+                if volume_discount > 0:
+                    tiered_price = tiered_price * (1 - volume_discount / 100)
+
+                # Add pricing context to result
+                result.data["pricing"] = {
+                    "base_price": base_price,
+                    "tiered_price": round(tiered_price, 2),
+                    "tier": tier if self.buyer_identity else "public",
+                    "tier_discount": discount if self.buyer_identity else 0,
+                    "volume_discount": volume_discount,
+                    "requested_volume": volume,
+                    "deal_type": deal_type,
+                }
+
+        return result
+
+    async def request_deal(
+        self,
+        product_id: str,
+        deal_type: str = "PD",
+        impressions: int = None,
+        flight_start: str = None,
+        flight_end: str = None,
+        target_cpm: float = None,
+        protocol: Protocol = None,
+    ) -> UnifiedResult:
+        """Request a Deal ID from seller for programmatic activation.
+
+        Creates a programmatic deal that can be activated in traditional
+        DSP platforms (The Trade Desk, DV360, Amazon DSP, etc.).
+
+        Args:
+            product_id: Product ID to request deal for
+            deal_type: 'PG' (guaranteed), 'PD' (preferred), 'PA' (private auction)
+            impressions: Volume (required for PG deals)
+            flight_start: Start date (YYYY-MM-DD)
+            flight_end: End date (YYYY-MM-DD)
+            target_cpm: Target price for negotiation (agency/advertiser only)
+            protocol: Protocol to use for the request
+
+        Returns:
+            UnifiedResult with Deal ID and activation instructions
+        """
+        import hashlib
+        from datetime import datetime, timedelta
+
+        # Get product details first
+        product_result = await self.get_product(product_id, protocol=protocol)
+
+        if not product_result.success:
+            return product_result
+
+        product = product_result.data
+        if not product:
+            return UnifiedResult(
+                success=False,
+                error=f"Product {product_id} not found",
+                protocol=protocol or self.default_protocol,
+            )
+
+        # Calculate pricing
+        base_price = product.get("basePrice", product.get("price", 20.0))
+        if not isinstance(base_price, (int, float)):
+            base_price = 20.0
+
+        tier = "public"
+        discount = 0.0
+        if self.buyer_identity:
+            tier = self.buyer_identity.get_access_tier().value
+            discount = self.buyer_identity.get_discount_percentage()
+
+        tiered_price = base_price * (1 - discount / 100)
+
+        # Volume discount
+        if impressions and tier in ("agency", "advertiser"):
+            if impressions >= 10_000_000:
+                tiered_price *= 0.90
+            elif impressions >= 5_000_000:
+                tiered_price *= 0.95
+
+        # Handle negotiation
+        final_price = tiered_price
+        if target_cpm and tier in ("agency", "advertiser"):
+            floor_price = tiered_price * 0.90
+            if target_cpm >= floor_price:
+                final_price = target_cpm
+            else:
+                final_price = floor_price
+
+        # Generate Deal ID
+        timestamp = datetime.now().strftime("%Y%m%d%H%M")
+        identity_seed = ""
+        if self.buyer_identity:
+            identity_seed = self.buyer_identity.agency_id or self.buyer_identity.seat_id or "public"
+        seed = f"{product_id}-{identity_seed}-{timestamp}"
+        hash_suffix = hashlib.md5(seed.encode()).hexdigest()[:8].upper()
+        deal_id = f"DEAL-{hash_suffix}"
+
+        # Default flight dates
+        if not flight_start:
+            flight_start = datetime.now().strftime("%Y-%m-%d")
+        if not flight_end:
+            flight_end = (datetime.now() + timedelta(days=30)).strftime("%Y-%m-%d")
+
+        # Build deal response
+        deal_data = {
+            "deal_id": deal_id,
+            "product_id": product_id,
+            "product_name": product.get("name", "Unknown Product"),
+            "deal_type": deal_type,
+            "price": round(final_price, 2),
+            "original_price": round(base_price, 2),
+            "discount_applied": round(discount, 1),
+            "access_tier": tier,
+            "impressions": impressions,
+            "flight_start": flight_start,
+            "flight_end": flight_end,
+            "activation_instructions": {
+                "ttd": f"The Trade Desk > Inventory > Private Marketplace > Add Deal ID: {deal_id}",
+                "dv360": f"Display & Video 360 > Inventory > My Inventory > New > Deal ID: {deal_id}",
+                "amazon": f"Amazon DSP > Private Marketplace > Deals > Add Deal: {deal_id}",
+                "xandr": f"Xandr > Inventory > Deals > Create Deal with ID: {deal_id}",
+                "yahoo": f"Yahoo DSP > Inventory > Private Marketplace > Enter Deal ID: {deal_id}",
+            },
+            "expires_at": (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d"),
+        }
+
+        return UnifiedResult(
+            success=True,
+            data=deal_data,
+            protocol=protocol or self.default_protocol,
         )

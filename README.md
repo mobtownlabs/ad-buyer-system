@@ -198,6 +198,104 @@ asyncio.run(main())
 
 ---
 
+## DSP Use Case: Deal ID Discovery
+
+The Ad Buyer System supports **DSP (Demand Side Platform)** workflows where you obtain Deal IDs from sellers for activation in traditional DSP platforms (The Trade Desk, DV360, Amazon DSP, etc.).
+
+### Identity-Based Tiered Pricing
+
+Sellers offer different pricing based on revealed buyer identity:
+
+| Tier | Identity Required | Discount | Access |
+|------|------------------|----------|--------|
+| **Public** | None | 0% | Price ranges, limited catalog |
+| **Seat** | DSP seat ID | 5% | Fixed prices |
+| **Agency** | Agency ID | 10% | Premium inventory, negotiation |
+| **Advertiser** | Agency + Advertiser ID | 15% | Volume discounts, full negotiation |
+
+### Example: DSP Deal Discovery
+
+```python
+import asyncio
+from ad_buyer.clients import UnifiedClient
+from ad_buyer.models import BuyerIdentity
+
+async def main():
+    # Create buyer identity for best pricing
+    identity = BuyerIdentity(
+        seat_id="ttd-seat-123",
+        agency_id="omnicom-456",
+        agency_name="OMD",
+        advertiser_id="coca-cola-789",
+        advertiser_name="Coca-Cola",
+    )
+
+    async with UnifiedClient(buyer_identity=identity) as client:
+        # Step 1: Discover inventory with tiered pricing
+        inventory = await client.discover_inventory(
+            channel="ctv",
+            max_cpm=25.0,
+        )
+        print(f"Found {len(inventory.data)} products")
+
+        # Step 2: Get pricing for a product
+        pricing = await client.get_pricing(
+            product_id="ctv-premium-001",
+            volume=5_000_000,
+        )
+        print(f"Tiered price: ${pricing.data['pricing']['tiered_price']} CPM")
+
+        # Step 3: Request a Deal ID
+        deal = await client.request_deal(
+            product_id="ctv-premium-001",
+            deal_type="PD",  # Preferred Deal
+            impressions=5_000_000,
+            flight_start="2026-02-01",
+            flight_end="2026-02-28",
+        )
+
+        print(f"Deal ID: {deal.data['deal_id']}")
+        print(f"Final CPM: ${deal.data['price']}")
+        print(f"Activate in TTD: {deal.data['activation_instructions']['ttd']}")
+
+asyncio.run(main())
+```
+
+Output:
+```
+Found 12 products
+Tiered price: $17.00 CPM
+Deal ID: DEAL-A1B2C3D4
+Final CPM: $17.00
+Activate in TTD: The Trade Desk > Inventory > Private Marketplace > Add Deal ID: DEAL-A1B2C3D4
+```
+
+### Deal Types
+
+| Type | Code | Description |
+|------|------|-------------|
+| **Programmatic Guaranteed** | `PG` | Fixed price, guaranteed impressions |
+| **Preferred Deal** | `PD` | Fixed price, non-guaranteed first-look |
+| **Private Auction** | `PA` | Floor price with auction dynamics |
+
+### DSP Tools
+
+The system provides specialized tools for DSP workflows:
+
+- `DiscoverInventoryTool` - Query sellers with identity context
+- `GetPricingTool` - Get tier-specific pricing with volume discounts
+- `RequestDealTool` - Request Deal IDs with activation instructions
+
+### Run the Example
+
+```bash
+cd ad_buyer_system
+pip install -e .
+python examples/dsp_deal_discovery.py
+```
+
+---
+
 ## Protocol Options
 
 The system supports two protocols for communicating with OpenDirect servers:
@@ -371,10 +469,10 @@ LOG_LEVEL=INFO
 │  └───────────────────────────────────────────────────────────┘  │
 │                              │                                  │
 │  Level 2: Channel Specialists (Claude Sonnet)                   │
-│  ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌───────────┐       │
-│  │ Branding  │ │  Mobile   │ │    CTV    │ │Performance│       │
-│  │   Agent   │ │ App Agent │ │   Agent   │ │   Agent   │       │
-│  └───────────┘ └───────────┘ └───────────┘ └───────────┘       │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐   │
+│  │Branding │ │ Mobile  │ │   CTV   │ │ Perform │ │   DSP   │   │
+│  │  Agent  │ │App Agent│ │  Agent  │ │  Agent  │ │  Agent  │   │
+│  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘   │
 │                              │                                  │
 │  Level 3: Operational (Claude Sonnet)                           │
 │  ┌───────────┐ ┌───────────┐ ┌───────────┐                     │
@@ -401,23 +499,33 @@ ad_buyer_system/
 │   ├── basic_mcp_usage.py
 │   ├── natural_language_a2a.py
 │   ├── protocol_switching.py
+│   ├── dsp_deal_discovery.py  # DSP Deal ID workflow
 │   └── campaign_brief.json
 ├── src/ad_buyer/
 │   ├── agents/            # CrewAI agents
 │   │   ├── level1/        # Portfolio Manager
-│   │   ├── level2/        # Channel Specialists
+│   │   ├── level2/        # Channel Specialists (incl. DSP Agent)
 │   │   └── level3/        # Operational Agents
 │   ├── clients/           # API clients
-│   │   ├── unified_client.py    # Unified MCP + A2A (recommended)
+│   │   ├── unified_client.py    # Unified MCP + A2A + DSP methods
 │   │   ├── mcp_client.py        # Direct MCP access
 │   │   └── a2a_client.py        # Natural language
 │   ├── crews/             # CrewAI crews
 │   ├── flows/             # Workflow orchestration
+│   │   ├── deal_booking_flow.py # Campaign booking flow
+│   │   └── dsp_deal_flow.py     # DSP Deal ID discovery flow
 │   ├── interfaces/        # User interfaces
 │   │   ├── api/           # FastAPI REST server
 │   │   └── cli/           # Typer CLI
 │   ├── models/            # Pydantic models
+│   │   ├── opendirect.py        # OpenDirect entities
+│   │   ├── flow_state.py        # Flow state models
+│   │   └── buyer_identity.py    # DSP buyer identity models
 │   └── tools/             # CrewAI tools
+│       ├── research/      # Research tools
+│       ├── execution/     # Booking tools
+│       ├── reporting/     # Reporting tools
+│       └── dsp/           # DSP tools (discover, pricing, deals)
 ├── tests/
 │   └── unit/              # Unit tests
 └── scripts/               # Test and utility scripts
