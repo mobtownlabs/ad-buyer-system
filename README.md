@@ -1,147 +1,110 @@
 # Ad Buyer System
 
-CrewAI-based advertising buyer agent using IAB OpenDirect 2.1 standards and the IAB Tech Lab's agentic-direct server.
+An AI-powered media buying system for **agencies and advertisers** to automate programmatic direct purchases using IAB OpenDirect standards.
 
-## Features
+## What This Does
 
-- **Dual Protocol Support**: MCP (direct tool calls) and A2A (natural language) protocols
-- **Hierarchical Agent Architecture**: Portfolio Manager coordinates Channel Specialists
-- **Claude Models**: Opus 4 for strategic decisions, Sonnet 4.5 for execution
-- **IAB OpenDirect Integration**: Full API support for booking deals and PMPs
-- **Multiple Interfaces**: CLI, REST API, and conversational chat
+The Ad Buyer System lets you:
 
-## Architecture
+- **Automate media buying** with AI agents that understand your campaign goals and budget
+- **Search and discover inventory** across publishers using natural language or structured queries
+- **Book deals programmatically** via IAB OpenDirect 2.1 protocol
+- **Manage campaigns** through CLI, REST API, or conversational chat interface
+- **Connect to any OpenDirect-compliant seller** including the live IAB Tech Lab server
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      Ad Buyer System                             │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                  │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │              Portfolio Manager (Claude Opus)              │   │
-│  │         Budget allocation, strategy, coordination         │   │
-│  └──────────────────────┬───────────────────────────────────┘   │
-│                         │                                        │
-│         ┌───────────────┼───────────────┬───────────────┐       │
-│         ▼               ▼               ▼               ▼       │
-│  ┌───────────┐   ┌───────────┐   ┌───────────┐   ┌───────────┐  │
-│  │ Branding  │   │  Mobile   │   │    CTV    │   │Performance│  │
-│  │  Agent    │   │App Agent  │   │   Agent   │   │   Agent   │  │
-│  │ (Sonnet)  │   │ (Sonnet)  │   │ (Sonnet)  │   │ (Sonnet)  │  │
-│  └─────┬─────┘   └─────┬─────┘   └─────┬─────┘   └─────┬─────┘  │
-│        │               │               │               │        │
-│        └───────────────┴───────┬───────┴───────────────┘        │
-│                                │                                 │
-│         ┌──────────────────────┼──────────────────────┐         │
-│         ▼                      ▼                      ▼         │
-│  ┌───────────┐          ┌───────────┐          ┌───────────┐   │
-│  │ Research  │          │ Execution │          │ Reporting │   │
-│  │   Agent   │          │   Agent   │          │   Agent   │   │
-│  └───────────┘          └───────────┘          └───────────┘   │
-│                                                                  │
-├─────────────────────────────────────────────────────────────────┤
-│                      Unified Client                              │
-│              ┌─────────────┬─────────────┐                      │
-│              │     MCP     │     A2A     │                      │
-│              │ (33 tools)  │  (natural   │                      │
-│              │   direct    │  language)  │                      │
-│              └──────┬──────┴──────┬──────┘                      │
-└─────────────────────┼─────────────┼─────────────────────────────┘
-                      │             │
-                      ▼             ▼
-        ┌─────────────────────────────────────┐
-        │   IAB Tech Lab agentic-direct       │
-        │         (OpenDirect 2.1)            │
-        │  https://agentic-direct-server-     │
-        │    hwgrypmndq-uk.a.run.app          │
-        └─────────────────────────────────────┘
-```
+## Who Should Use This
 
-## Prerequisites
+- **Media agencies** automating programmatic direct buying
+- **Advertisers** with in-house media teams
+- **Trading desks** looking to scale deal operations
+- **Anyone** wanting to experiment with agentic advertising workflows
 
-- **Python 3.11+**
-- **Anthropic API key** - Required for CrewAI agents ([get one here](https://console.anthropic.com/))
-- **Internet access** - The system connects to IAB Tech Lab's hosted agentic-direct server by default
+---
 
-> **Note**: You do **not** need to install the [IAB Tech Lab agentic-direct](https://github.com/InteractiveAdvertisingBureau/agentic-direct) server locally. This system connects to their hosted instance at `https://agentic-direct-server-hwgrypmndq-uk.a.run.app` which provides the OpenDirect 2.1 API via MCP and A2A protocols.
+## Installation
 
-## Quick Start
+### Prerequisites
 
-### Installation
+- Python 3.11 or higher
+- An [Anthropic API key](https://console.anthropic.com/) for Claude
+- Internet access (connects to IAB Tech Lab's hosted server by default)
+
+> **Note**: You do **not** need to install the IAB agentic-direct server locally. This system connects to their hosted instance by default.
+
+### Step 1: Clone and Install
 
 ```bash
-# Clone the repository
-git clone https://github.com/mobtownlabs/ad-buyer-system.git
-cd ad-buyer-system
+git clone https://github.com/mobtownlabs/ad_buyer_system.git
+cd ad_buyer_system
 
-# Install dependencies
+# Install the package
+pip install -e .
+
+# Or with dev tools (for testing)
 pip install -e ".[dev]"
-
-# Configure environment
-cp .env.example .env
-# Edit .env with your ANTHROPIC_API_KEY
 ```
 
-### Basic Usage
+### Step 2: Configure Environment
 
 ```bash
-# CLI Commands
-ad-buyer --help                    # Show available commands
-ad-buyer init                      # Create campaign brief template
-ad-buyer book campaign_brief.json  # Run booking workflow
-ad-buyer search --channel ctv      # Search inventory
-ad-buyer chat                      # Interactive chat mode
-
-# Run API server
-python -m ad_buyer.interfaces.api.main
-# Server runs at http://localhost:8000
+cp .env.example .env
 ```
 
-## Client Usage Examples
+Edit `.env` with your settings:
 
-> **Runnable examples**: See the `examples/` folder for complete, runnable scripts:
-> - `basic_mcp_usage.py` - MCP protocol basics
-> - `natural_language_a2a.py` - A2A natural language queries
-> - `protocol_switching.py` - Switching protocols on-the-fly
-> - `individual_clients.py` - Using IABMCPClient and A2AClient directly
+```bash
+# Required: Your Anthropic API key
+ANTHROPIC_API_KEY=sk-ant-api03-xxxxx
 
-### Using the Unified Client (Recommended)
+# OpenDirect server (default: live IAB Tech Lab server)
+IAB_SERVER_URL=https://agentic-direct-server-hwgrypmndq-uk.a.run.app
+
+# Storage
+DATABASE_URL=sqlite:///./ad_buyer.db
+
+# Optional: Redis for caching
+# REDIS_URL=redis://localhost:6379/0
+```
+
+### Step 3: Verify Installation
+
+```bash
+# Test the CLI
+ad-buyer --help
+
+# Test connection to IAB server
+python scripts/test_unified_client.py
+```
+
+---
+
+## Quick Start Examples
+
+### Example 1: List Available Products (MCP Protocol)
 
 ```python
 import asyncio
 from ad_buyer.clients import UnifiedClient, Protocol
 
 async def main():
-    # MCP mode - direct tool calls (faster, deterministic)
     async with UnifiedClient(protocol=Protocol.MCP) as client:
-        # List available products
+        # List available products from seller
         result = await client.list_products()
-        print(f"Products: {result.data}")
-
-        # Create an account
-        result = await client.create_account(name="My Advertiser")
-        account_id = result.data["id"]
-
-        # Create an order
-        result = await client.create_order(
-            account_id=account_id,
-            name="Q1 Campaign",
-            budget=50000
-        )
-        order_id = result.data["id"]
-
-        # Create a line item
-        result = await client.create_line(
-            order_id=order_id,
-            product_id="prod-123",
-            name="Homepage Banner",
-            quantity=1000000
-        )
+        if result.success:
+            for product in result.data[:5]:
+                print(f"- {product.get('name')}: ${product.get('rate', 'N/A')} CPM")
 
 asyncio.run(main())
 ```
 
-### Using Natural Language (A2A Protocol)
+Output:
+```
+- Premium Display: $15.00 CPM
+- CTV Streaming: $35.00 CPM
+- Mobile App Interstitial: $12.00 CPM
+```
+
+### Example 2: Natural Language Search (A2A Protocol)
 
 ```python
 import asyncio
@@ -149,7 +112,7 @@ from ad_buyer.clients import UnifiedClient, Protocol
 
 async def main():
     async with UnifiedClient(protocol=Protocol.A2A) as client:
-        # Natural language queries
+        # Ask in natural language
         result = await client.send_natural_language(
             "Find CTV inventory with household targeting under $30 CPM"
         )
@@ -158,7 +121,58 @@ async def main():
 asyncio.run(main())
 ```
 
-### Switching Protocols On-The-Fly
+Output:
+```
+Response: I found 3 CTV products matching your criteria:
+1. Streaming Plus - $28 CPM, household + demographic targeting
+2. Connected TV Basic - $25 CPM, household targeting
+3. OTT Premium - $29 CPM, household + interest targeting
+```
+
+### Example 3: Book a Deal
+
+```python
+import asyncio
+from ad_buyer.clients import UnifiedClient, Protocol
+
+async def main():
+    async with UnifiedClient(protocol=Protocol.MCP) as client:
+        # Create an account
+        account = await client.create_account(name="Acme Corp")
+        account_id = account.data["id"]
+        print(f"Created account: {account_id}")
+
+        # Create an order
+        order = await client.create_order(
+            account_id=account_id,
+            name="Q1 2026 Brand Campaign",
+            budget=50000
+        )
+        order_id = order.data["id"]
+        print(f"Created order: {order_id}")
+
+        # Create a line item
+        line = await client.create_line(
+            order_id=order_id,
+            product_id="ctv-premium",
+            name="CTV Streaming Buy",
+            quantity=1_500_000  # 1.5M impressions
+        )
+        print(f"Created line: {line.data['id']}")
+        print(f"Total cost: ${line.data.get('cost', 'TBD')}")
+
+asyncio.run(main())
+```
+
+Output:
+```
+Created account: acc-12345
+Created order: ord-67890
+Created line: line-11111
+Total cost: $45,000
+```
+
+### Example 4: Switch Between Protocols
 
 ```python
 import asyncio
@@ -171,38 +185,34 @@ async def main():
 
         # Use MCP for fast, deterministic operations
         products = await client.list_products(protocol=Protocol.MCP)
+        print(f"Found {len(products.data)} products")
 
-        # Use A2A for natural language queries
-        recommendations = await client.send_natural_language(
-            "What products would work best for a brand awareness campaign?"
+        # Use A2A for natural language recommendations
+        recs = await client.send_natural_language(
+            "Which of these products would work best for a brand awareness campaign targeting millennials?"
         )
-
-        # Mix in a workflow
-        account = await client.create_account(
-            name="Test Account",
-            protocol=Protocol.MCP  # Fast, direct
-        )
+        print(f"Recommendation: {recs.data}")
 
 asyncio.run(main())
 ```
 
-### Using Individual Clients
+---
 
-```python
-# MCP Client - Direct tool access
-from ad_buyer.clients import IABMCPClient
+## Protocol Options
 
-async with IABMCPClient() as client:
-    result = await client.call_tool("list_products", {})
-    print(client.tools)  # See all 33 available tools
+The system supports two protocols for communicating with OpenDirect servers:
 
-# A2A Client - Natural language
-from ad_buyer.clients import A2AClient
+| Protocol | Best For | Speed | Flexibility |
+|----------|----------|-------|-------------|
+| **MCP** | Structured operations (create, update, list) | Fast | Deterministic, 33 tools |
+| **A2A** | Natural language queries and discovery | Moderate | Flexible, conversational |
 
-async with A2AClient() as client:
-    response = await client.send_message("List available products")
-    print(response.text, response.data)
-```
+### When to Use Each
+
+- **MCP**: Booking deals, creating orders, listing inventory, automated workflows
+- **A2A**: Discovery queries, recommendations, complex questions, conversational interfaces
+
+---
 
 ## Available MCP Tools
 
@@ -220,88 +230,274 @@ The IAB server provides 33 OpenDirect tools:
 | **Change Requests** | `create_changerequest`, `get_changerequest`, `list_changerequests` |
 | **Messages** | `create_message`, `get_message`, `list_messages` |
 
+---
+
+## REST API
+
+Start the API server:
+
+```bash
+python -m ad_buyer.interfaces.api.main
+# Server runs at http://localhost:8000
+```
+
+### Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/products` | List available products |
+| `GET` | `/products/{id}` | Get product details |
+| `POST` | `/accounts` | Create an account |
+| `POST` | `/orders` | Create an order |
+| `POST` | `/lines` | Create a line item |
+| `POST` | `/search` | Search inventory |
+| `POST` | `/chat` | Natural language query |
+
+### Example: Search Products via API
+
+```bash
+curl -X POST http://localhost:8000/search \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "CTV inventory under $30 CPM",
+    "channel": "ctv",
+    "max_cpm": 30
+  }'
+```
+
+Response:
+```json
+{
+  "results": [
+    {
+      "product_id": "ctv-001",
+      "name": "Streaming Plus",
+      "cpm": 28.00,
+      "targeting": ["household", "demographic"]
+    },
+    {
+      "product_id": "ctv-002",
+      "name": "Connected TV Basic",
+      "cpm": 25.00,
+      "targeting": ["household"]
+    }
+  ],
+  "total": 2
+}
+```
+
+---
+
+## CLI Commands
+
+```bash
+# View help
+ad-buyer --help
+
+# Initialize a campaign brief template
+ad-buyer init
+
+# Book a campaign from brief
+ad-buyer book campaign_brief.json
+
+# Search inventory
+ad-buyer search --channel ctv --max-cpm 30
+
+# Start interactive chat mode
+ad-buyer chat
+
+# List your orders
+ad-buyer orders list
+```
+
+---
+
+## Configuration Reference
+
+All settings can be configured via environment variables or `.env` file:
+
+```bash
+# ─────────────────────────────────────────────────────────────────
+# REQUIRED
+# ─────────────────────────────────────────────────────────────────
+ANTHROPIC_API_KEY=sk-ant-api03-xxxxx
+
+# ─────────────────────────────────────────────────────────────────
+# OPENDIRECT SERVER
+# ─────────────────────────────────────────────────────────────────
+# Live IAB Tech Lab server (default, recommended)
+IAB_SERVER_URL=https://agentic-direct-server-hwgrypmndq-uk.a.run.app
+
+# Local server (for development/testing)
+# OPENDIRECT_BASE_URL=http://localhost:3000
+
+# ─────────────────────────────────────────────────────────────────
+# STORAGE
+# ─────────────────────────────────────────────────────────────────
+DATABASE_URL=sqlite:///./ad_buyer.db
+
+# Optional: Redis for caching
+# REDIS_URL=redis://localhost:6379/0
+
+# ─────────────────────────────────────────────────────────────────
+# LLM CONFIGURATION
+# ─────────────────────────────────────────────────────────────────
+DEFAULT_LLM_MODEL=anthropic/claude-sonnet-4-5-20250929
+MANAGER_LLM_MODEL=anthropic/claude-opus-4-20250514
+LLM_TEMPERATURE=0.3
+LLM_MAX_TOKENS=4096
+
+# ─────────────────────────────────────────────────────────────────
+# ENVIRONMENT
+# ─────────────────────────────────────────────────────────────────
+ENVIRONMENT=development
+LOG_LEVEL=INFO
+```
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      Ad Buyer System                            │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Level 1: Strategic (Claude Opus)                               │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │              Portfolio Manager                             │  │
+│  │   • Budget allocation      • Strategy decisions            │  │
+│  │   • Channel coordination   • Performance optimization      │  │
+│  └───────────────────────────────────────────────────────────┘  │
+│                              │                                  │
+│  Level 2: Channel Specialists (Claude Sonnet)                   │
+│  ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌───────────┐       │
+│  │ Branding  │ │  Mobile   │ │    CTV    │ │Performance│       │
+│  │   Agent   │ │ App Agent │ │   Agent   │ │   Agent   │       │
+│  └───────────┘ └───────────┘ └───────────┘ └───────────┘       │
+│                              │                                  │
+│  Level 3: Operational (Claude Sonnet)                           │
+│  ┌───────────┐ ┌───────────┐ ┌───────────┐                     │
+│  │ Research  │ │ Execution │ │ Reporting │                     │
+│  │   Agent   │ │   Agent   │ │   Agent   │                     │
+│  └───────────┘ └───────────┘ └───────────┘                     │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────┤
+│  Interfaces: CLI │ REST API │ Chat                              │
+├─────────────────────────────────────────────────────────────────┤
+│  Protocols: MCP (33 tools) │ A2A (natural language)             │
+├─────────────────────────────────────────────────────────────────┤
+│  Server: IAB Tech Lab agentic-direct (OpenDirect 2.1)           │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## Project Structure
 
 ```
 ad_buyer_system/
-├── examples/            # Runnable example scripts
+├── examples/              # Runnable example scripts
 │   ├── basic_mcp_usage.py
 │   ├── natural_language_a2a.py
 │   ├── protocol_switching.py
-│   ├── individual_clients.py
 │   └── campaign_brief.json
 ├── src/ad_buyer/
-│   ├── agents/           # CrewAI agents (Portfolio Manager, Channel Specialists)
-│   │   ├── level1/       # Portfolio Manager
-│   │   ├── level2/       # Channel Specialists (Branding, Mobile, CTV, Performance)
-│   │   └── level3/       # Operational Agents (Research, Execution, Reporting)
-│   ├── clients/          # API clients
-│   │   ├── unified_client.py   # Unified MCP + A2A client (recommended)
-│   │   ├── mcp_client.py       # Direct MCP tool access
-│   │   ├── a2a_client.py       # Natural language A2A
-│   │   └── opendirect_client.py # REST client for local mock
-│   ├── crews/            # CrewAI crews
-│   ├── flows/            # CrewAI flows (deal booking workflow)
-│   ├── interfaces/       # User interfaces
-│   │   ├── api/          # FastAPI REST server
-│   │   └── cli/          # Typer CLI
-│   ├── models/           # Pydantic models (OpenDirect, flow state)
-│   └── tools/            # CrewAI tools (research, execution, reporting)
+│   ├── agents/            # CrewAI agents
+│   │   ├── level1/        # Portfolio Manager
+│   │   ├── level2/        # Channel Specialists
+│   │   └── level3/        # Operational Agents
+│   ├── clients/           # API clients
+│   │   ├── unified_client.py    # Unified MCP + A2A (recommended)
+│   │   ├── mcp_client.py        # Direct MCP access
+│   │   └── a2a_client.py        # Natural language
+│   ├── crews/             # CrewAI crews
+│   ├── flows/             # Workflow orchestration
+│   ├── interfaces/        # User interfaces
+│   │   ├── api/           # FastAPI REST server
+│   │   └── cli/           # Typer CLI
+│   ├── models/            # Pydantic models
+│   └── tools/             # CrewAI tools
 ├── tests/
-│   └── unit/             # Unit tests (43 tests)
-├── scripts/              # Test and utility scripts
-└── campaign_brief.json   # Example campaign brief
+│   └── unit/              # Unit tests
+└── scripts/               # Test and utility scripts
 ```
 
-## Configuration
+---
 
-Create a `.env` file with:
+## Development
 
-```bash
-# Required
-ANTHROPIC_API_KEY=your-api-key-here
-
-# Optional - LLM Settings
-DEFAULT_LLM_MODEL=anthropic/claude-sonnet-4-5-20250929
-MANAGER_LLM_MODEL=anthropic/claude-opus-4-20250514
-LLM_TEMPERATURE=0.3
-
-# Optional - Local mock server (for development)
-OPENDIRECT_BASE_URL=http://localhost:3000
-```
-
-## Running Tests
+### Run Tests
 
 ```bash
-# Run all unit tests
-pytest tests/unit/ -v
+# Install dev dependencies
+pip install -e ".[dev]"
+
+# Run all tests
+ANTHROPIC_API_KEY=test pytest tests/ -v
 
 # Run with coverage
-pytest tests/unit/ --cov=src/ad_buyer
+pytest tests/ --cov=ad_buyer --cov-report=html
 
-# Test the unified client against IAB server
+# Test against live IAB server
 python scripts/test_unified_client.py
-
-# Test MCP client
 python scripts/test_mcp_e2e.py
-
-# Test A2A client
 python scripts/test_a2a_e2e.py
 ```
 
-## IAB Tech Lab Integration
+### Code Quality
 
-This project integrates with the [IAB Tech Lab agentic-direct](https://github.com/InteractiveAdvertisingBureau/agentic-direct) reference implementation:
+```bash
+# Linting
+ruff check src/
 
-- **Server**: `https://agentic-direct-server-hwgrypmndq-uk.a.run.app`
-- **Protocol**: OpenDirect 2.1 via MCP (Model Context Protocol) and A2A (Agent-to-Agent)
-- **Tools**: 33 MCP tools for full OpenDirect workflow
+# Type checking
+mypy src/
 
-## Requirements
+# Format code
+ruff format src/
+```
 
-- Python 3.11+
-- Anthropic API key (for CrewAI agents)
-- Internet access (for IAB hosted server) or local mock server
+---
+
+## Troubleshooting
+
+### "ANTHROPIC_API_KEY required"
+
+Make sure your `.env` file exists and contains a valid API key:
+```bash
+echo "ANTHROPIC_API_KEY=sk-ant-api03-xxxxx" > .env
+```
+
+### "Connection refused" to IAB server
+
+Verify connectivity to the IAB Tech Lab server:
+```bash
+curl https://agentic-direct-server-hwgrypmndq-uk.a.run.app/health
+```
+
+### MCP tools not working
+
+Ensure you're using `Protocol.MCP` and the client is connected:
+```python
+async with UnifiedClient(protocol=Protocol.MCP) as client:
+    # Client is automatically connected
+    result = await client.list_products()
+```
+
+### A2A responses are slow
+
+A2A involves an LLM on the server side, so responses take longer than MCP. Use MCP for performance-critical operations.
+
+---
+
+## Related Projects
+
+- [ad_seller_system](https://github.com/mobtownlabs/ad_seller_system) - Publisher/SSP-side agent system
+- [IAB agentic-advertising](https://github.com/IABTechLab/agentic-advertising) - IAB Tech Lab specifications
+- [agentic-direct](https://github.com/InteractiveAdvertisingBureau/agentic-direct) - IAB reference server
+
+---
 
 ## License
 
