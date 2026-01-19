@@ -1,6 +1,6 @@
 # Ad Buyer System
 
-An AI-powered media buying system for **agencies and advertisers** to automate programmatic direct purchases using IAB OpenDirect standards.
+An AI-powered media buying system for **DSP's, agencies, and advertisers** to automate programmatic direct purchases using IAB OpenDirect standards.
 
 ## What This Does
 
