@@ -20,6 +20,19 @@ from .buyer_identity import (
     DealResponse,
     DealType,
 )
+from .ucp import (
+    AudienceCapability,
+    AudiencePlan,
+    AudienceValidationResult,
+    CoverageEstimate,
+    EmbeddingType,
+    SignalType,
+    SimilarityMetric,
+    UCPConsent,
+    UCPContextDescriptor,
+    UCPEmbedding,
+    UCPModelDescriptor,
+)
 
 __all__ = [
     # OpenDirect models
@@ -41,4 +54,16 @@ __all__ = [
     "DealRequest",
     "DealResponse",
     "DealType",
+    # UCP models
+    "AudienceCapability",
+    "AudiencePlan",
+    "AudienceValidationResult",
+    "CoverageEstimate",
+    "EmbeddingType",
+    "SignalType",
+    "SimilarityMetric",
+    "UCPConsent",
+    "UCPContextDescriptor",
+    "UCPEmbedding",
+    "UCPModelDescriptor",
 ]

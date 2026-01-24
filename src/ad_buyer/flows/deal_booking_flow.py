@@ -1,12 +1,14 @@
 """Deal Booking Flow - main workflow for booking advertising deals."""
 
 import json
+import uuid
 from datetime import datetime
 from typing import Any
 
 from crewai.flow.flow import Flow, listen, or_, start
 
 from ..clients.opendirect_client import OpenDirectClient
+from ..clients.ucp_client import UCPClient
 from ..crews.channel_crews import (
     create_branding_crew,
     create_ctv_crew,
@@ -21,6 +23,7 @@ from ..models.flow_state import (
     ExecutionStatus,
     ProductRecommendation,
 )
+from ..models.ucp import AudiencePlan, SignalType, UCPConsent
 
 
 class DealBookingFlow(Flow[BookingState]):
@@ -71,10 +74,140 @@ class DealBookingFlow(Flow[BookingState]):
         return {"status": "success", "brief": brief}
 
     @listen(receive_campaign_brief)
-    def allocate_budget(self, brief_result: dict[str, Any]) -> dict[str, Any]:
-        """Portfolio manager determines channel budget allocation."""
+    def plan_audience(self, brief_result: dict[str, Any]) -> dict[str, Any]:
+        """Plan audience targeting strategy using UCP.
+
+        This step analyzes the target_audience from the campaign brief and:
+        1. Discovers available signals from sellers via UCP
+        2. Matches requirements to inventory capabilities
+        3. Estimates coverage per channel
+        4. Identifies any audience gaps
+
+        The audience plan is used to inform budget allocation.
+        """
         if brief_result.get("status") != "success":
             return brief_result
+
+        target_audience = self.state.campaign_brief.get("target_audience", {})
+
+        if not target_audience:
+            # No audience targeting specified - skip planning
+            return {"status": "success", "audience_plan": None, "message": "No audience targeting specified"}
+
+        try:
+            # Create audience plan from campaign requirements
+            audience_plan = self._create_audience_plan(target_audience)
+            self.state.audience_plan = audience_plan
+
+            # Estimate coverage per channel using UCP
+            coverage_estimates = self._estimate_channel_coverage(target_audience)
+            self.state.audience_coverage_estimates = coverage_estimates
+
+            # Identify gaps
+            gaps = self._identify_audience_gaps(target_audience, coverage_estimates)
+            self.state.audience_gaps = gaps
+
+            self.state.updated_at = datetime.utcnow()
+
+            return {
+                "status": "success",
+                "audience_plan": audience_plan,
+                "coverage_estimates": coverage_estimates,
+                "gaps": gaps,
+            }
+
+        except Exception as e:
+            # Don't fail the flow - audience planning is optional
+            self.state.errors.append(f"Audience planning warning: {e}")
+            return {"status": "success", "audience_plan": None, "error": str(e)}
+
+    def _create_audience_plan(self, target_audience: dict[str, Any]) -> dict[str, Any]:
+        """Create an audience plan from target_audience specification."""
+        plan_id = f"plan_{uuid.uuid4().hex[:8]}"
+
+        # Extract targeting components
+        demographics = target_audience.get("demographics", {})
+        interests = target_audience.get("interests", [])
+        behaviors = target_audience.get("behaviors", [])
+        exclusions = target_audience.get("exclusions", [])
+
+        # Determine required signal types
+        signal_types = []
+        if demographics:
+            signal_types.append(SignalType.IDENTITY.value)
+        if interests or target_audience.get("content_categories"):
+            signal_types.append(SignalType.CONTEXTUAL.value)
+        if behaviors or target_audience.get("intent"):
+            signal_types.append(SignalType.REINFORCEMENT.value)
+
+        return {
+            "plan_id": plan_id,
+            "target_demographics": demographics,
+            "target_interests": interests if isinstance(interests, list) else [],
+            "target_behaviors": behaviors if isinstance(behaviors, list) else [],
+            "exclusions": exclusions if isinstance(exclusions, list) else [],
+            "requested_signal_types": signal_types,
+            "audience_expansion_enabled": target_audience.get("expand_audience", True),
+            "expansion_factor": target_audience.get("expansion_factor", 1.0),
+        }
+
+    def _estimate_channel_coverage(self, target_audience: dict[str, Any]) -> dict[str, float]:
+        """Estimate audience coverage per channel."""
+        # Base coverage factors
+        base_factors = {
+            "branding": 0.85,  # Display/video has broad reach
+            "ctv": 0.65,  # CTV is more limited
+            "mobile_app": 0.70,  # App inventory varies
+            "performance": 0.80,  # Remarketing depends on pools
+        }
+
+        # Adjust based on targeting complexity
+        complexity_penalty = 0.0
+
+        if target_audience.get("demographics"):
+            complexity_penalty += 0.10
+
+        if target_audience.get("behaviors"):
+            complexity_penalty += 0.20  # Behavioral has lower coverage
+
+        if target_audience.get("interests"):
+            complexity_penalty += 0.05  # Contextual is widely available
+
+        # Calculate coverage per channel
+        coverage = {}
+        for channel, base in base_factors.items():
+            adjusted = max(0.1, base - complexity_penalty)
+            coverage[channel] = round(adjusted * 100, 1)
+
+        return coverage
+
+    def _identify_audience_gaps(
+        self,
+        target_audience: dict[str, Any],
+        coverage_estimates: dict[str, float],
+    ) -> list[str]:
+        """Identify audience requirements that may have gaps."""
+        gaps = []
+
+        # Check for low-coverage targeting
+        if target_audience.get("behaviors"):
+            gaps.append("behavioral_targeting: coverage may be limited (35-45%)")
+
+        if target_audience.get("demographics", {}).get("income"):
+            gaps.append("income_targeting: coverage typically 50-60%")
+
+        # Check for channels with very low coverage
+        for channel, coverage in coverage_estimates.items():
+            if coverage < 40:
+                gaps.append(f"{channel}: low coverage ({coverage}%), consider broader targeting")
+
+        return gaps
+
+    @listen(plan_audience)
+    def allocate_budget(self, audience_result: dict[str, Any]) -> dict[str, Any]:
+        """Portfolio manager determines channel budget allocation."""
+        if audience_result.get("status") != "success":
+            return audience_result
 
         try:
             # Create and run portfolio crew
@@ -151,7 +284,11 @@ class DealBookingFlow(Flow[BookingState]):
             self.state.execution_status = ExecutionStatus.RESEARCHING
 
             channel_brief = self._create_channel_brief("branding", branding_alloc)
-            crew = create_branding_crew(self._client, channel_brief)
+            crew = create_branding_crew(
+                self._client,
+                channel_brief,
+                audience_plan=self.state.audience_plan,
+            )
             result = crew.kickoff()
 
             recommendations = self._parse_recommendations(str(result), "branding")
@@ -176,7 +313,11 @@ class DealBookingFlow(Flow[BookingState]):
 
         try:
             channel_brief = self._create_channel_brief("ctv", ctv_alloc)
-            crew = create_ctv_crew(self._client, channel_brief)
+            crew = create_ctv_crew(
+                self._client,
+                channel_brief,
+                audience_plan=self.state.audience_plan,
+            )
             result = crew.kickoff()
 
             recommendations = self._parse_recommendations(str(result), "ctv")
@@ -201,7 +342,11 @@ class DealBookingFlow(Flow[BookingState]):
 
         try:
             channel_brief = self._create_channel_brief("mobile_app", mobile_alloc)
-            crew = create_mobile_crew(self._client, channel_brief)
+            crew = create_mobile_crew(
+                self._client,
+                channel_brief,
+                audience_plan=self.state.audience_plan,
+            )
             result = crew.kickoff()
 
             recommendations = self._parse_recommendations(str(result), "mobile_app")
@@ -226,7 +371,11 @@ class DealBookingFlow(Flow[BookingState]):
 
         try:
             channel_brief = self._create_channel_brief("performance", perf_alloc)
-            crew = create_performance_crew(self._client, channel_brief)
+            crew = create_performance_crew(
+                self._client,
+                channel_brief,
+                audience_plan=self.state.audience_plan,
+            )
             result = crew.kickoff()
 
             recommendations = self._parse_recommendations(str(result), "performance")

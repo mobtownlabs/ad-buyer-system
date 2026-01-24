@@ -4,6 +4,7 @@ from .opendirect_client import OpenDirectClient
 from .a2a_client import A2AClient, A2AResponse, A2AError
 from .mcp_client import IABMCPClient, MCPToolResult, MCPClientError
 from .unified_client import UnifiedClient, UnifiedResult, Protocol
+from .ucp_client import UCPClient, UCPExchangeResult
 
 
 __all__ = [
@@ -21,4 +22,7 @@ __all__ = [
     "IABMCPClient",
     "MCPToolResult",
     "MCPClientError",
+    # UCP client for audience exchange
+    "UCPClient",
+    "UCPExchangeResult",
 ]

@@ -87,6 +87,23 @@ class BookingState(BaseModel):
     # Input
     campaign_brief: dict[str, Any] = Field(default_factory=dict, alias="campaignBrief")
 
+    # Audience planning (added for UCP integration)
+    audience_plan: Optional[dict[str, Any]] = Field(
+        default=None,
+        alias="audiencePlan",
+        description="Audience plan from Audience Planner Agent",
+    )
+    audience_coverage_estimates: dict[str, float] = Field(
+        default_factory=dict,
+        alias="audienceCoverageEstimates",
+        description="Coverage estimates per channel (0-100%)",
+    )
+    audience_gaps: list[str] = Field(
+        default_factory=list,
+        alias="audienceGaps",
+        description="Audience requirements that cannot be fulfilled",
+    )
+
     # Budget allocation
     budget_allocations: dict[str, ChannelAllocation] = Field(
         default_factory=dict, alias="budgetAllocations"
