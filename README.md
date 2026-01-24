@@ -1,12 +1,13 @@
 # Ad Buyer System
 
-An AI-powered media buying system for **DSP's, agencies, and advertisers** to automate programmatic direct purchases using IAB OpenDirect standards.
+An AI-powered media buying system for **DSPs, agencies, and advertisers** to automate programmatic direct purchases using IAB OpenDirect standards.
 
 ## What This Does
 
 The Ad Buyer System lets you:
 
 - **Automate media buying** with AI agents that understand your campaign goals and budget
+- **Plan audiences** using IAB Tech Lab UCP (User Context Protocol) for real-time matching
 - **Search and discover inventory** across publishers using natural language or structured queries
 - **Book deals programmatically** via IAB OpenDirect 2.1 protocol
 - **Obtain Deal IDs for DSP activation** - present buyer identity (agency, advertiser) to unlock tiered pricing, then get Deal IDs for activation in The Trade Desk, DV360, Amazon DSP, and other platforms
@@ -20,6 +21,158 @@ The Ad Buyer System lets you:
 - **Trading desks** looking to scale deal operations and manage Deal IDs across multiple DSPs
 - **DSP operators** who need to discover inventory, negotiate pricing, and obtain Deal IDs for programmatic activation
 - **Anyone** wanting to experiment with agentic advertising workflows
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            AD BUYER SYSTEM                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ╔═══════════════════════════════════════════════════════════════════════╗  │
+│  ║                 LEVEL 1: ORCHESTRATION (Claude Opus)                  ║  │
+│  ║  ┌─────────────────────────────────────────────────────────────────┐  ║  │
+│  ║  │                    Portfolio Manager                            │  ║  │
+│  ║  │   • Budget allocation            • Strategic decisions          │  ║  │
+│  ║  │   • Channel optimization         • Performance management       │  ║  │
+│  ║  └─────────────────────────────────────────────────────────────────┘  ║  │
+│  ╚═══════════════════════════════════════════════════════════════════════╝  │
+│                                    │                                        │
+│                                    ▼                                        │
+│  ╔═══════════════════════════════════════════════════════════════════════╗  │
+│  ║             LEVEL 2: CHANNEL SPECIALISTS (Claude Sonnet)              ║  │
+│  ║  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐         ║  │
+│  ║  │Branding │ │ Mobile  │ │   CTV   │ │ Perfor- │ │   DSP   │         ║  │
+│  ║  │  Agent  │ │App Agent│ │  Agent  │ │ mance   │ │  Agent  │         ║  │
+│  ║  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘         ║  │
+│  ╚═══════════════════════════════════════════════════════════════════════╝  │
+│                                    │                                        │
+│                                    ▼                                        │
+│  ╔═══════════════════════════════════════════════════════════════════════╗  │
+│  ║              LEVEL 3: FUNCTIONAL AGENTS (Claude Sonnet)               ║  │
+│  ║  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐                 ║  │
+│  ║  │ Research │ │Execution │ │Reporting │ │ Audience │                 ║  │
+│  ║  │  Agent   │ │  Agent   │ │  Agent   │ │ Planner  │                 ║  │
+│  ║  └──────────┘ └──────────┘ └──────────┘ └──────────┘                 ║  │
+│  ╚═══════════════════════════════════════════════════════════════════════╝  │
+│                                                                             │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  TOOLS                                                                      │
+│  ┌────────────────────────────────────────────────────────────────────────┐ │
+│  │ Research: ProductSearch, AvailsCheck                                   │ │
+│  │ Execution: CreateOrder, CreateLine, BookLine, ReserveLine              │ │
+│  │ DSP: DiscoverInventory, GetPricing, RequestDeal                        │ │
+│  │ Audience: AudienceDiscovery, AudienceMatching, CoverageEstimation      │ │
+│  └────────────────────────────────────────────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  INTERFACES: CLI │ REST API │ Chat                                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  STORAGE: SQLite (dev) │ Redis (prod)                                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  PROTOCOLS                                                                  │
+│  ┌──────────────────────┐  ┌──────────────────────┐  ┌──────────────────┐  │
+│  │ MCP (33 OpenDirect   │  │ A2A (Natural Language│  │ UCP (Audience    │  │
+│  │      Tools)          │  │      Queries)        │  │    Embeddings)   │  │
+│  └──────────────────────┘  └──────────────────────┘  └──────────────────┘  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  SERVER: IAB Tech Lab agentic-direct (OpenDirect 2.1)                       │
+│  https://agentic-direct-server-hwgrypmndq-uk.a.run.app                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Agent Hierarchy
+
+| Level | Agent | Model | Temperature | Role |
+|-------|-------|-------|-------------|------|
+| **1** | Portfolio Manager | Claude Opus | 0.3 | Strategic orchestration, budget allocation, channel optimization |
+| **2** | Branding Agent | Claude Sonnet | 0.5 | Brand awareness campaigns, premium placements |
+| **2** | Mobile App Agent | Claude Sonnet | 0.5 | In-app advertising, rewarded video, interstitials |
+| **2** | CTV Agent | Claude Sonnet | 0.5 | Connected TV, streaming, household targeting |
+| **2** | Performance Agent | Claude Sonnet | 0.5 | Direct response, conversion optimization |
+| **2** | DSP Agent | Claude Sonnet | 0.5 | Deal ID discovery, programmatic activation |
+| **3** | Research Agent | Claude Sonnet | 0.2 | Inventory search, availability checking |
+| **3** | Execution Agent | Claude Sonnet | 0.2 | Order creation, line booking |
+| **3** | Reporting Agent | Claude Sonnet | 0.3 | Performance reporting, analytics |
+| **3** | Audience Planner | Claude Sonnet | 0.3 | UCP-based audience planning, coverage estimation |
+
+---
+
+## UCP: User Context Protocol
+
+The Ad Buyer System integrates with the **IAB Tech Lab User Context Protocol (UCP)** for intelligent audience planning and matching.
+
+### What UCP Does
+
+UCP enables real-time audience matching between buyer and seller agents by exchanging embeddings (256-1024 dimension vectors) that encode:
+
+- **Identity Signals** - Hashed user IDs, device graphs
+- **Contextual Signals** - Page content, keywords, categories
+- **Reinforcement Signals** - Conversion data, feedback loops
+
+### Audience Planner Agent
+
+The **Audience Planner Agent** (Level 3) uses UCP to:
+
+1. **Discover Capabilities** - Query seller audience capabilities via UCP
+2. **Match Requirements** - Align campaign audience requirements to inventory
+3. **Estimate Coverage** - Calculate what percentage of inventory matches the audience
+4. **Identify Gaps** - Find audience requirements the seller cannot support
+5. **Suggest Alternatives** - Recommend similar audiences when exact match unavailable
+
+### Audience Tools
+
+| Tool | Purpose |
+|------|---------|
+| `AudienceDiscoveryTool` | Discover available audience signals from sellers via UCP |
+| `AudienceMatchingTool` | Match campaign audiences to inventory capabilities |
+| `CoverageEstimationTool` | Estimate audience coverage for targeting combinations |
+
+### Audience Planning Flow
+
+```
+Campaign Brief → Audience Planner Agent → UCP Discovery → Coverage Estimates → Budget Allocation
+                        │
+                        ├─ Discover seller capabilities via UCP
+                        ├─ Match audience requirements to inventory
+                        ├─ Estimate coverage per channel
+                        └─ Identify gaps and alternatives
+```
+
+### Example: Audience-Aware Campaign
+
+```python
+# Campaign brief with audience targeting
+campaign_brief = {
+    "name": "Q1 Brand Campaign",
+    "budget": 100000,
+    "objectives": ["brand_awareness", "reach"],
+    "target_audience": {
+        "demographics": {"age": "25-54", "gender": "all"},
+        "interests": ["technology", "business"],
+        "behaviors": ["in-market-auto"],
+    },
+    "start_date": "2026-02-01",
+    "end_date": "2026-03-31",
+}
+
+# The flow will:
+# 1. Analyze target_audience via Audience Planner Agent
+# 2. Discover seller capabilities using UCP
+# 3. Estimate coverage: {"branding": 75%, "ctv": 55%, ...}
+# 4. Identify gaps: ["behavioral_targeting: coverage limited to 35-45%"]
+# 5. Adjust budget allocation based on coverage
+```
+
+### UCP Technical Details
+
+| Property | Value |
+|----------|-------|
+| **Content-Type** | `application/vnd.ucp.embedding+json; v=1` |
+| **Embedding Dimensions** | 256-1024 |
+| **Similarity Metric** | Cosine (default), Dot Product, L2 |
+| **Consent Required** | Yes (IAB TCF v2) |
 
 ---
 
@@ -300,17 +453,19 @@ python examples/dsp_deal_discovery.py
 
 ## Protocol Options
 
-The system supports two protocols for communicating with OpenDirect servers:
+The system supports multiple protocols for communicating with OpenDirect servers:
 
 | Protocol | Best For | Speed | Flexibility |
 |----------|----------|-------|-------------|
 | **MCP** | Structured operations (create, update, list) | Fast | Deterministic, 33 tools |
 | **A2A** | Natural language queries and discovery | Moderate | Flexible, conversational |
+| **UCP** | Audience embedding exchange | Fast | Privacy-preserving matching |
 
 ### When to Use Each
 
 - **MCP**: Booking deals, creating orders, listing inventory, automated workflows
 - **A2A**: Discovery queries, recommendations, complex questions, conversational interfaces
+- **UCP**: Audience planning, coverage estimation, capability discovery
 
 ---
 
@@ -352,6 +507,7 @@ python -m ad_buyer.interfaces.api.main
 | `POST` | `/lines` | Create a line item |
 | `POST` | `/search` | Search inventory |
 | `POST` | `/chat` | Natural language query |
+| `POST` | `/audience/plan` | Plan audience targeting (UCP) |
 
 ### Example: Search Products via API
 
@@ -432,12 +588,21 @@ IAB_SERVER_URL=https://agentic-direct-server-hwgrypmndq-uk.a.run.app
 # OPENDIRECT_BASE_URL=http://localhost:3000
 
 # ─────────────────────────────────────────────────────────────────
-# STORAGE
+# STORAGE (choose one)
 # ─────────────────────────────────────────────────────────────────
+# SQLite (default, good for development)
 DATABASE_URL=sqlite:///./ad_buyer.db
 
-# Optional: Redis for caching
+# Redis (recommended for production)
 # REDIS_URL=redis://localhost:6379/0
+
+# ─────────────────────────────────────────────────────────────────
+# UCP (User Context Protocol)
+# ─────────────────────────────────────────────────────────────────
+UCP_ENABLED=true
+UCP_EMBEDDING_DIMENSION=512
+UCP_SIMILARITY_THRESHOLD=0.5
+UCP_CONSENT_REQUIRED=true
 
 # ─────────────────────────────────────────────────────────────────
 # LLM CONFIGURATION
@@ -456,43 +621,6 @@ LOG_LEVEL=INFO
 
 ---
 
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      Ad Buyer System                            │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  Level 1: Strategic (Claude Opus)                               │
-│  ┌───────────────────────────────────────────────────────────┐  │
-│  │              Portfolio Manager                             │  │
-│  │   • Budget allocation      • Strategy decisions            │  │
-│  │   • Channel coordination   • Performance optimization      │  │
-│  └───────────────────────────────────────────────────────────┘  │
-│                              │                                  │
-│  Level 2: Channel Specialists (Claude Sonnet)                   │
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐   │
-│  │Branding │ │ Mobile  │ │   CTV   │ │ Perform │ │   DSP   │   │
-│  │  Agent  │ │App Agent│ │  Agent  │ │  Agent  │ │  Agent  │   │
-│  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘   │
-│                              │                                  │
-│  Level 3: Operational (Claude Sonnet)                           │
-│  ┌───────────┐ ┌───────────┐ ┌───────────┐                     │
-│  │ Research  │ │ Execution │ │ Reporting │                     │
-│  │   Agent   │ │   Agent   │ │   Agent   │                     │
-│  └───────────┘ └───────────┘ └───────────┘                     │
-│                                                                 │
-├─────────────────────────────────────────────────────────────────┤
-│  Interfaces: CLI │ REST API │ Chat                              │
-├─────────────────────────────────────────────────────────────────┤
-│  Protocols: MCP (33 tools) │ A2A (natural language)             │
-├─────────────────────────────────────────────────────────────────┤
-│  Server: IAB Tech Lab agentic-direct (OpenDirect 2.1)           │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
 ## Project Structure
 
 ```
@@ -501,20 +629,21 @@ ad_buyer_system/
 │   ├── basic_mcp_usage.py
 │   ├── natural_language_a2a.py
 │   ├── protocol_switching.py
-│   ├── dsp_deal_discovery.py  # DSP Deal ID workflow
+│   ├── dsp_deal_discovery.py
 │   └── campaign_brief.json
 ├── src/ad_buyer/
 │   ├── agents/            # CrewAI agents
 │   │   ├── level1/        # Portfolio Manager
 │   │   ├── level2/        # Channel Specialists (incl. DSP Agent)
-│   │   └── level3/        # Operational Agents
+│   │   └── level3/        # Functional Agents (incl. Audience Planner)
 │   ├── clients/           # API clients
 │   │   ├── unified_client.py    # Unified MCP + A2A + DSP methods
 │   │   ├── mcp_client.py        # Direct MCP access
-│   │   └── a2a_client.py        # Natural language
+│   │   ├── a2a_client.py        # Natural language
+│   │   └── ucp_client.py        # UCP embedding exchange
 │   ├── crews/             # CrewAI crews
 │   ├── flows/             # Workflow orchestration
-│   │   ├── deal_booking_flow.py # Campaign booking flow
+│   │   ├── deal_booking_flow.py # Campaign booking flow (with audience planning)
 │   │   └── dsp_deal_flow.py     # DSP Deal ID discovery flow
 │   ├── interfaces/        # User interfaces
 │   │   ├── api/           # FastAPI REST server
@@ -522,12 +651,14 @@ ad_buyer_system/
 │   ├── models/            # Pydantic models
 │   │   ├── opendirect.py        # OpenDirect entities
 │   │   ├── flow_state.py        # Flow state models
-│   │   └── buyer_identity.py    # DSP buyer identity models
+│   │   ├── buyer_identity.py    # DSP buyer identity models
+│   │   └── ucp.py               # UCP models (embeddings, capabilities)
 │   └── tools/             # CrewAI tools
 │       ├── research/      # Research tools
 │       ├── execution/     # Booking tools
 │       ├── reporting/     # Reporting tools
-│       └── dsp/           # DSP tools (discover, pricing, deals)
+│       ├── dsp/           # DSP tools (discover, pricing, deals)
+│       └── audience/      # Audience tools (discovery, matching, coverage)
 ├── tests/
 │   └── unit/              # Unit tests
 └── scripts/               # Test and utility scripts
@@ -612,6 +743,7 @@ A2A involves an LLM on the server side, so responses take longer than MCP. Use M
 - [A2A Server](https://agentic-direct-server-hwgrypmndq-uk.a.run.app/) - Agent-to-Agent protocol endpoint
 - [MCP Info](https://agentic-direct-server-hwgrypmndq-uk.a.run.app/mcp/info) - MCP server metadata
 - [MCP SSE](https://agentic-direct-server-hwgrypmndq-uk.a.run.app/mcp/sse) - MCP server-sent events endpoint
+- [UCP Specification](https://iabtechlab.com/standards/user-context-protocol/) - User Context Protocol documentation
 
 ---
 

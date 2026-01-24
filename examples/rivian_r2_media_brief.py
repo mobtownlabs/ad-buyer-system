@@ -574,55 +574,6 @@ def build_document():
         ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
     ]))
     story.append(eval_table)
-    story.append(PageBreak())
-
-    # Contact & Timeline
-    story.append(Paragraph("9. CONTACT INFORMATION & TIMELINE", styles['SectionHeader']))
-
-    story.append(Paragraph("9.1 Key Contacts", styles['SubSection']))
-    contact_data = [
-        ['Role', 'Name', 'Email'],
-        ['Agency Lead', 'Sarah Mitchell', 'smitchell@horizon-media.com'],
-        ['Client Lead', 'David Park', 'dpark@rivian.com'],
-        ['Media Director', 'Jennifer Lopez', 'jlopez@horizon-media.com'],
-        ['Technical Contact', 'Michael Chen', 'mchen@horizon-media.com'],
-    ]
-
-    contact_table = Table(contact_data, colWidths=[1.5*inch, 2*inch, 3*inch])
-    contact_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), RIVIAN_GREEN),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 9),
-        ('GRID', (0, 0), (-1, -1), 0.5, RIVIAN_GRAY),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-    ]))
-    story.append(contact_table)
-    story.append(Spacer(1, 12))
-
-    story.append(Paragraph("9.2 Key Dates", styles['SubSection']))
-    timeline_data = [
-        ['Milestone', 'Date'],
-        ['RFP Issued', 'January 24, 2026'],
-        ['Questions Due', 'February 1, 2026'],
-        ['Q&A Responses Published', 'February 5, 2026'],
-        ['Proposals Due', 'February 15, 2026'],
-        ['Partner Selection', 'February 22, 2026'],
-        ['Contracting Complete', 'February 28, 2026'],
-        ['Campaign Launch', 'March 1, 2026'],
-        ['Campaign End', 'June 30, 2026'],
-    ]
-
-    timeline_table = Table(timeline_data, colWidths=[3*inch, 2*inch])
-    timeline_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), RIVIAN_GREEN),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 9),
-        ('GRID', (0, 0), (-1, -1), 0.5, RIVIAN_GRAY),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-    ]))
-    story.append(timeline_table)
 
     story.append(Spacer(1, 0.5*inch))
     story.append(Paragraph("--- END OF RFP ---", styles['FooterNote']))
