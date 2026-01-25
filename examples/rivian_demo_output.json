@@ -1,0 +1,75 @@
+{
+  "timestamp": "2026-01-24T14:21:59.098769",
+  "protocol": "MCP",
+  "campaign": {
+    "name": "Rivian R2 Launch Campaign",
+    "client": "Rivian Automotive",
+    "budget": 4700000,
+    "start_date": "2026-03-01",
+    "end_date": "2026-06-30"
+  },
+  "buyer_identity": {
+    "agency": "Agency ABC",
+    "advertiser": "Rivian Automotive",
+    "tier": "advertiser"
+  },
+  "deals": [
+    {
+      "deal_id": "DEAL-379796CD",
+      "product_id": "e2cfc8d1-b836-4a61-a792-9b2da8f4f5be",
+      "product_name": "Mock Product",
+      "deal_type": "PD",
+      "price": 15.0,
+      "original_price": 20.0,
+      "discount_applied": 15.0,
+      "access_tier": "advertiser",
+      "impressions": 15000000,
+      "flight_start": "2026-03-01",
+      "flight_end": "2026-06-30",
+      "activation_instructions": {
+        "ttd": "The Trade Desk > Inventory > Private Marketplace > Add Deal ID: DEAL-379796CD",
+        "dv360": "Display & Video 360 > Inventory > My Inventory > New > Deal ID: DEAL-379796CD",
+        "amazon": "Amazon DSP > Private Marketplace > Deals > Add Deal: DEAL-379796CD",
+        "xandr": "Xandr > Inventory > Deals > Create Deal with ID: DEAL-379796CD",
+        "yahoo": "Yahoo DSP > Inventory > Private Marketplace > Enter Deal ID: DEAL-379796CD"
+      },
+      "expires_at": "2026-01-31"
+    }
+  ],
+  "booking": {
+    "account_id": "1953fe8e-238f-44c7-b052-fa1d305faf7a",
+    "order_id": "7fb4bd93-86f1-4e39-b729-d102e7797ce5",
+    "lines": [
+      {
+        "line_id": "e054188a-7ce5-452a-9d6e-fb826050c622",
+        "deal_id": "DEAL-379796CD",
+        "product": "Mock Product",
+        "impressions": 15000000,
+        "cpm": 15.0
+      }
+    ],
+    "deals": [
+      {
+        "deal_id": "DEAL-379796CD",
+        "product_id": "e2cfc8d1-b836-4a61-a792-9b2da8f4f5be",
+        "product_name": "Mock Product",
+        "deal_type": "PD",
+        "price": 15.0,
+        "original_price": 20.0,
+        "discount_applied": 15.0,
+        "access_tier": "advertiser",
+        "impressions": 15000000,
+        "flight_start": "2026-03-01",
+        "flight_end": "2026-06-30",
+        "activation_instructions": {
+          "ttd": "The Trade Desk > Inventory > Private Marketplace > Add Deal ID: DEAL-379796CD",
+          "dv360": "Display & Video 360 > Inventory > My Inventory > New > Deal ID: DEAL-379796CD",
+          "amazon": "Amazon DSP > Private Marketplace > Deals > Add Deal: DEAL-379796CD",
+          "xandr": "Xandr > Inventory > Deals > Create Deal with ID: DEAL-379796CD",
+          "yahoo": "Yahoo DSP > Inventory > Private Marketplace > Enter Deal ID: DEAL-379796CD"
+        },
+        "expires_at": "2026-01-31"
+      }
+    ]
+  }
+}

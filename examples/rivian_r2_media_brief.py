@@ -138,7 +138,7 @@ def build_document():
     # Document info table
     info_data = [
         ['Client:', 'Rivian Automotive, LLC'],
-        ['Agency:', 'Horizon Media (Agency of Record)'],
+        ['Agency:', 'Agency ABC (Agency of Record)'],
         ['Campaign:', 'Rivian R2 Model Year Launch'],
         ['RFP Issue Date:', date.today().strftime('%B %d, %Y')],
         ['Response Due:', 'February 15, 2026'],

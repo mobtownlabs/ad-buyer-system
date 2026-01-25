@@ -100,7 +100,7 @@ DEMO_PROMPTS = [
     {
         "step": 2,
         "title": "Pricing Inquiry - Get tier-specific rates",
-        "prompt": "I'm from Horizon Media representing Rivian Automotive. What's your best CPM pricing for 15 million CTV impressions across your premium streaming inventory from March through June 2026?",
+        "prompt": "I'm from Agency ABC representing Rivian Automotive. What's your best CPM pricing for 15 million CTV impressions across your premium streaming inventory from March through June 2026?",
         "description": "By revealing agency and advertiser identity, the buyer unlocks tiered pricing. The seller agent will provide better rates than public pricing."
     },
     {
@@ -142,8 +142,8 @@ async def run_interactive_demo():
     identity = BuyerIdentity(
         seat_id="amazon-dsp-001",
         seat_name="Amazon DSP",
-        agency_id="horizon-media-001",
-        agency_name="Horizon Media",
+        agency_id="agency-abc-001",
+        agency_name="Agency ABC",
         advertiser_id="rivian-automotive-001",
         advertiser_name="Rivian Automotive",
         advertiser_industry="Automotive",
@@ -220,8 +220,8 @@ async def run_automated_demo():
     identity = BuyerIdentity(
         seat_id="amazon-dsp-001",
         seat_name="Amazon DSP",
-        agency_id="horizon-media-001",
-        agency_name="Horizon Media",
+        agency_id="agency-abc-001",
+        agency_name="Agency ABC",
         advertiser_id="rivian-automotive-001",
         advertiser_name="Rivian Automotive",
         advertiser_industry="Automotive",
