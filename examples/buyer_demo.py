@@ -13,7 +13,7 @@ This buyer agent demonstrates the full media buying workflow:
 
 Seller Agents Required:
     Terminal 1: python publisher_gam_server.py   (port 8001)
-    Terminal 2: python dsp_amazon_server.py      (port 8002)
+    Terminal 2: python dsp_server.py      (port 8002)
     Terminal 3: python buyer_demo.py             (this script)
 
 Usage:
@@ -69,14 +69,14 @@ console = Console() if RICH_AVAILABLE else None
 # =============================================================================
 
 PUBLISHER_URL = "http://localhost:8001"  # Publisher with GAM
-DSP_URL = "http://localhost:8002"        # Amazon DSP
+DSP_URL = "http://localhost:8002"        # DSP
 
 
 @dataclass
 class BuyerIdentity:
     """Buyer identity for tiered pricing access."""
-    seat_id: str = "amazon-dsp-001"
-    seat_name: str = "Amazon DSP"
+    seat_id: str = "dsp-seat-001"
+    seat_name: str = "DSP"
     agency_id: str = "agency-abc-001"
     agency_name: str = "Agency ABC"
     advertiser_id: str = "rivian-automotive-001"
@@ -398,12 +398,12 @@ async def run_demo(pdf_path: Optional[str] = None):
     """Run the complete buyer agent demo."""
 
     print_header("RIVIAN R2 CAMPAIGN - BUYER AGENT DEMO")
-    print_info("Multi-Seller Architecture: Publisher (GAM) + DSP (Amazon)")
+    print_info("Multi-Seller Architecture: Publisher (GAM) + DSP")
     print("")
 
     # Initialize clients
     publisher = SellerClient(PUBLISHER_URL, "Publisher (GAM)")
-    dsp = SellerClient(DSP_URL, "Amazon DSP")
+    dsp = SellerClient(DSP_URL, "DSP")
 
     identity = BuyerIdentity()
     brief = CampaignBrief()
@@ -613,11 +613,11 @@ async def run_demo(pdf_path: Optional[str] = None):
         print_success("Connected to Publisher (GAM) on port 8001")
 
         # Check DSP connection
-        print_substep("Connecting to Amazon DSP...")
+        print_substep("Connecting to DSP...")
         if not await dsp.health_check():
-            print_error("Cannot connect to DSP. Run: python dsp_amazon_server.py")
+            print_error("Cannot connect to DSP. Run: python dsp_server.py")
             return
-        print_success("Connected to Amazon DSP on port 8002")
+        print_success("Connected to DSP on port 8002")
 
         # Get CTV inventory from Publisher
         print_substep("Querying CTV inventory from Publisher...")
@@ -672,12 +672,12 @@ async def run_demo(pdf_path: Optional[str] = None):
             console.print(table)
 
         # Get DSP inventory
-        print_substep("Querying inventory from Amazon DSP...")
+        print_substep("Querying inventory from DSP...")
         result = await dsp.call_tool("list_products")
         dsp_products = result.get("result", {}).get("products", [])
 
         # Get pricing for DSP products
-        print_substep("Getting pricing from Amazon DSP...")
+        print_substep("Getting pricing from DSP...")
         dsp_pricing = []
         for product in dsp_products:
             result = await dsp.call_tool("get_pricing", {
@@ -693,7 +693,7 @@ async def run_demo(pdf_path: Optional[str] = None):
 
         # Display DSP pricing table
         if RICH_AVAILABLE and dsp_pricing:
-            table = Table(title="DSP Inventory - Amazon DSP Pricing")
+            table = Table(title="DSP Inventory - DSP Pricing")
             table.add_column("Product", style="cyan")
             table.add_column("Channel", style="yellow")
             table.add_column("Price", style="green")
@@ -1129,7 +1129,7 @@ async def run_demo(pdf_path: Optional[str] = None):
                 "advertiser_name": identity.advertiser_name,
                 "agency_name": identity.agency_name,
                 "buyer_seat_id": identity.seat_id,
-                "target_dsp": "amazon_dsp",
+                "target_dsp": "generic_dsp",
                 "start_date": brief.start_date,
                 "end_date": brief.end_date,
             })
@@ -1157,13 +1157,13 @@ async def run_demo(pdf_path: Optional[str] = None):
                         "impressions": line.impressions,
                         "startdate": brief.start_date,
                         "enddate": brief.end_date,
-                        "targetdsp": "amazon_dsp"
+                        "targetdsp": "generic_dsp"
                     }
                 }
                 print_adcom_json(openrtb_deal, "Deal Object (PMP)", "OpenRTB 2.6")
 
                 # Attach to DSP
-                print_substep(f"Attaching {line.deal_id} to Amazon DSP...")
+                print_substep(f"Attaching {line.deal_id} to DSP...")
 
                 attach_result = await dsp.call_tool("attach_deal", {
                     "deal_id": line.deal_id,
@@ -1199,7 +1199,7 @@ async def run_demo(pdf_path: Optional[str] = None):
                             "strategy": "first_price"
                         },
                         "ext": {
-                            "dsp": "amazon_dsp",
+                            "dsp": "dsp",
                             "seatid": identity.seat_id
                         }
                     }
@@ -1280,7 +1280,7 @@ async def run_demo(pdf_path: Optional[str] = None):
                     },
                     "status": "ACTIVE"
                 }
-                print_adcom_json(adcom_campaign, "DSP Campaign (Performance)", "Amazon DSP + UCP 1.0")
+                print_adcom_json(adcom_campaign, "DSP Campaign (Performance)", "DSP + OpenDirect 2.1")
             else:
                 print_error(f"Failed: {result.get('error')}")
 
@@ -1354,7 +1354,7 @@ async def run_demo(pdf_path: Optional[str] = None):
                     },
                     "status": "ACTIVE"
                 }
-                print_adcom_json(adcom_mobile, "DSP Campaign (Mobile App Install)", "Amazon DSP + UCP 1.0")
+                print_adcom_json(adcom_mobile, "DSP Campaign (Mobile App Install)", "DSP + OpenDirect 2.1")
             else:
                 print_error(f"Failed: {result.get('error')}")
 
