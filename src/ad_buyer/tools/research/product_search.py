@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Product search tool for inventory discovery."""
 
 import asyncio

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Protocol switching example.
 
 Demonstrates switching between MCP and A2A protocols within a single workflow.

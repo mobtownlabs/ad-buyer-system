@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """HTTP client for IAB OpenDirect 2.1 API."""
 
 from typing import Any, Optional

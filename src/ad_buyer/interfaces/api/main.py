@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """FastAPI server for the Ad Buyer System."""
 
 import uuid

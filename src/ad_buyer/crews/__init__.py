@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Crew configurations for the Ad Buyer System."""
 
 from .portfolio_crew import create_portfolio_crew

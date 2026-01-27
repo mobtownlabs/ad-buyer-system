@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Audience Matching Tool - Match campaign audiences to inventory via UCP."""
 
 import asyncio

@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Tests for DSP tools."""
 
 from unittest.mock import AsyncMock, MagicMock, patch

@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Level 3 agents - Operational Sub-Agents."""
 
 from .research_agent import create_research_agent

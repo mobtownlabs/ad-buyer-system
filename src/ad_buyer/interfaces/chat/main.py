@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Chat interface for the Ad Buyer System."""
 
 from typing import Any

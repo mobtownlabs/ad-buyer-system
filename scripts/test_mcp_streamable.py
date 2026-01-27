@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Test MCP client using Streamable HTTP transport."""
 
 import asyncio

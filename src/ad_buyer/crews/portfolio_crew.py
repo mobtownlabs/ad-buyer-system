@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Portfolio Crew - top-level hierarchical crew."""
 
 from typing import Any

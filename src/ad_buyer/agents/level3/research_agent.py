@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Research Agent for inventory discovery."""
 
 from typing import Any

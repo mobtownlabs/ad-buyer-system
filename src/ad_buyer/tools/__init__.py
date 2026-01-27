@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """CrewAI tools for OpenDirect operations."""
 
 from .audience import (

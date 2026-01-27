@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Performance/Remarketing Specialist agent."""
 
 from typing import Any

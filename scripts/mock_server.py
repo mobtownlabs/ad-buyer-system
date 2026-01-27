@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Simple mock OpenDirect REST server for testing."""
 
 import uuid

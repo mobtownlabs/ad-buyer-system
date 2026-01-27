@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Flow state models for workflow persistence."""
 
 from datetime import datetime

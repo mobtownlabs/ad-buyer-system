@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Execution Agent for order and line management."""
 
 from typing import Any

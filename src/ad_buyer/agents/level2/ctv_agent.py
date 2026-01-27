@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Connected TV Specialist agent."""
 
 from typing import Any

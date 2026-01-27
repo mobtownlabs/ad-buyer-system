@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """MCP client for IAB agentic-direct server using Streamable HTTP transport."""
 
 import json

@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Workflow flows for the Ad Buyer System."""
 
 from .deal_booking_flow import DealBookingFlow

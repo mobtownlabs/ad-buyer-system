@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Buyer Agent Demo - Multi-Seller Interactive Demo
 
 This buyer agent demonstrates the full media buying workflow:

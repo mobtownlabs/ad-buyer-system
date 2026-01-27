@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Inventory discovery tool for DSP workflows."""
 
 import asyncio

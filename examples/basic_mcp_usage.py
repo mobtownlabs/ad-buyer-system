@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Basic MCP usage example.
 
 Demonstrates using the UnifiedClient with MCP protocol for direct tool calls.

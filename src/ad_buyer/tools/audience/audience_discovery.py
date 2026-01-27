@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Audience Discovery Tool - Discover available audience signals from sellers."""
 
 import asyncio

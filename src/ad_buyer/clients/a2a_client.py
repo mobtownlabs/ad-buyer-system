@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """A2A (Agent-to-Agent) client for IAB agentic-direct server."""
 
 import asyncio

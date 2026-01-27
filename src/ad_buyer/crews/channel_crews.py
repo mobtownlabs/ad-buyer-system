@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Channel Specialist Crews for inventory research and booking."""
 
 from typing import Any, Optional

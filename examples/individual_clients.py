@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Individual clients example.
 
 Demonstrates using IABMCPClient and A2AClient directly instead of UnifiedClient.

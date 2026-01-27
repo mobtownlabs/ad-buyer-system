@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Client implementations for ad buyer system."""
 
 from .opendirect_client import OpenDirectClient

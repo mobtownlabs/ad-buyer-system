@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Pydantic models for IAB OpenDirect 2.1 resources."""
 
 from datetime import datetime

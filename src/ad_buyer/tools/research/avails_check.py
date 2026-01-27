@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Availability check tool for inventory pricing."""
 
 import asyncio

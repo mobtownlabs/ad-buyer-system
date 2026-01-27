@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Reporting Agent for performance analysis."""
 
 from typing import Any

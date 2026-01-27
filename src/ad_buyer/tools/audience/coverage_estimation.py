@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Coverage Estimation Tool - Estimate audience coverage for targeting."""
 
 import asyncio

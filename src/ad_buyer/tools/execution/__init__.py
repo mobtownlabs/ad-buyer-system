@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Execution tools for order and line management."""
 
 from .order_management import CreateOrderTool

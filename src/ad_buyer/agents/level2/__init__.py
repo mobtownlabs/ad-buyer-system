@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Level 2 agents - Channel Specialists."""
 
 from .branding_agent import create_branding_agent

@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """End-to-end test of MCP client against IAB hosted servers."""
 
 import asyncio

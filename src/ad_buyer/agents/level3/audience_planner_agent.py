@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Audience Planner Agent - Level 3 Functional Agent.
 
 Plans and selects audiences for campaigns using UCP (User Context Protocol)

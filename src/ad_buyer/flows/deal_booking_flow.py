@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Deal Booking Flow - main workflow for booking advertising deals."""
 
 import json

@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """DSP (Demand Side Platform) Deal Discovery Specialist agent."""
 
 from typing import Any

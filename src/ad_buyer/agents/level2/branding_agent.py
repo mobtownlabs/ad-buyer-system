@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Branding Specialist agent for display/video campaigns."""
 
 from typing import Any

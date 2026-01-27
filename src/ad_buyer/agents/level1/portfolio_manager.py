@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Portfolio Manager agent - top-level orchestrator."""
 
 from typing import Any

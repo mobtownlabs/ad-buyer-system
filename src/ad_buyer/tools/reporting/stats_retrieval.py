@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Stats retrieval tool for performance reporting."""
 
 import asyncio

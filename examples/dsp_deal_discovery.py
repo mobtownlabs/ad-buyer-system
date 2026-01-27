@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Example: DSP Deal Discovery Workflow
 
 This example demonstrates the DSP use case where:

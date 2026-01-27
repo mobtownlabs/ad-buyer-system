@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Test MCP client using the official MCP SDK with proper SSE session management."""
 
 import asyncio

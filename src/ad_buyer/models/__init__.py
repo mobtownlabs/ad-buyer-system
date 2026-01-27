@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Data models for the Ad Buyer System."""
 
 from .opendirect import (

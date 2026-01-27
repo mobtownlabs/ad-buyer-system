@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Buyer identity models for tiered pricing access in DSP workflows."""
 
 from enum import Enum

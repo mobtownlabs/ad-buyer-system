@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """DSP Deal Discovery Flow - workflow for obtaining Deal IDs for programmatic activation."""
 
 from datetime import datetime

@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Line item management tools for booking inventory."""
 
 import asyncio

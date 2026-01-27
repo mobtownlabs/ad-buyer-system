@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Application settings loaded from environment variables."""
 
 from functools import lru_cache

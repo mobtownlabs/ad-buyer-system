@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Natural language A2A usage example.
 
 Demonstrates using the UnifiedClient with A2A protocol for natural language queries.

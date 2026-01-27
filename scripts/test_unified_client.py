@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Test unified client with both MCP and A2A protocols."""
 
 import asyncio

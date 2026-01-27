@@ -1,3 +1,6 @@
+# Author: AgentRange Inc.
+# Donated to IAB Tech Lab
+
 """Unified client for IAB agentic-direct server supporting both MCP and A2A protocols."""
 
 from dataclasses import dataclass, field
