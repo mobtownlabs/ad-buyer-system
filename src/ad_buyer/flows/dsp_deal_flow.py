@@ -1,4 +1,4 @@
-# Author: AgentRange Inc.
+# Author: Green Mountain Systems AI Inc.
 # Donated to IAB Tech Lab
 
 """DSP Deal Discovery Flow - workflow for obtaining Deal IDs for programmatic activation."""
