@@ -749,4 +749,4 @@ A2A involves an LLM on the server side, so responses take longer than MCP. Use M
 
 ## License
 
-MIT
+Apache 2.0
