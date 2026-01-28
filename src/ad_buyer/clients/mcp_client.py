@@ -7,8 +7,15 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
-from mcp import ClientSession
-from mcp.client.streamable_http import streamablehttp_client
+import httpx
+
+# Optional MCP SDK imports - fall back to simple HTTP if not available
+try:
+    from mcp import ClientSession
+    from mcp.client.streamable_http import streamablehttp_client
+    MCP_SDK_AVAILABLE = True
+except ImportError:
+    MCP_SDK_AVAILABLE = False
 
 
 @dataclass
@@ -19,6 +26,137 @@ class MCPToolResult:
     data: Any = None
     error: str = ""
     raw: Any = None
+
+
+class SimpleMCPClient:
+    """Simple HTTP-based MCP client for servers using /mcp/call endpoint.
+
+    This is a lightweight alternative to the full MCP SDK, suitable for
+    servers that implement a simple REST-based tool calling interface.
+    """
+
+    def __init__(self, base_url: str, timeout: float = 30.0):
+        """Initialize the simple MCP client.
+
+        Args:
+            base_url: Base URL for the MCP server
+            timeout: Request timeout in seconds
+        """
+        self.base_url = base_url.rstrip("/")
+        self._client = httpx.AsyncClient(timeout=timeout)
+        self._tools: dict[str, dict] = {}
+        self._server_info: dict[str, Any] = {}
+
+    async def connect(self) -> None:
+        """Connect to the server and discover available tools."""
+        # Get server info
+        try:
+            response = await self._client.get(f"{self.base_url}/")
+            if response.status_code == 200:
+                self._server_info = response.json()
+        except Exception:
+            pass
+
+        # Try /mcp/tools endpoint first (standard for ad seller agents)
+        try:
+            response = await self._client.get(f"{self.base_url}/mcp/tools")
+            if response.status_code == 200:
+                data = response.json()
+                tools = data.get("tools", data) if isinstance(data, dict) else data
+                if isinstance(tools, list):
+                    for tool in tools:
+                        name = tool.get("name", "")
+                        if name:
+                            self._tools[name] = tool
+        except Exception:
+            pass
+
+        # If no tools found, try calling list_tools
+        if not self._tools:
+            try:
+                result = await self.call_tool("list_tools")
+                if result.success and isinstance(result.data, list):
+                    for tool in result.data:
+                        name = tool.get("name", "")
+                        if name:
+                            self._tools[name] = tool
+            except Exception:
+                pass
+
+        # Final fallback: assume standard OpenDirect tools
+        if not self._tools:
+            standard_tools = [
+                "list_products", "get_product", "list_accounts", "create_account",
+                "list_orders", "create_order", "list_lines", "create_line",
+                "get_pricing", "book_programmatic_guaranteed", "create_pmp_deal",
+            ]
+            for name in standard_tools:
+                self._tools[name] = {"name": name}
+
+        server_name = self._server_info.get("name", self.base_url)
+        print(f"Connected to: {server_name}")
+        print(f"Available tools: {len(self._tools)}")
+
+    async def close(self) -> None:
+        """Close the HTTP client."""
+        await self._client.aclose()
+
+    async def __aenter__(self) -> "SimpleMCPClient":
+        await self.connect()
+        return self
+
+    async def __aexit__(self, *args: Any) -> None:
+        await self.close()
+
+    @property
+    def tools(self) -> dict[str, dict]:
+        """Get available tools."""
+        return self._tools
+
+    async def call_tool(self, name: str, arguments: dict[str, Any] = None) -> MCPToolResult:
+        """Call a tool via the /mcp/call endpoint.
+
+        Args:
+            name: Tool name
+            arguments: Tool arguments
+
+        Returns:
+            MCPToolResult with the response
+        """
+        try:
+            response = await self._client.post(
+                f"{self.base_url}/mcp/call",
+                json={"name": name, "arguments": arguments or {}},
+            )
+            response.raise_for_status()
+            data = response.json()
+
+            return MCPToolResult(
+                success=data.get("success", True),
+                data=data.get("result", data),
+                error=data.get("error", ""),
+                raw=data,
+            )
+        except httpx.HTTPStatusError as e:
+            return MCPToolResult(success=False, error=f"HTTP {e.response.status_code}")
+        except Exception as e:
+            return MCPToolResult(success=False, error=str(e))
+
+    # Convenience methods matching IABMCPClient interface
+
+    async def list_products(self) -> MCPToolResult:
+        return await self.call_tool("list_products")
+
+    async def get_product(self, product_id: str) -> MCPToolResult:
+        return await self.call_tool("get_product", {"id": product_id})
+
+    async def search_products(self, query: str = None, filters: dict = None) -> MCPToolResult:
+        args = {}
+        if query:
+            args["query"] = query
+        if filters:
+            args["filters"] = filters
+        return await self.call_tool("search_products", args)
 
 
 class IABMCPClient:

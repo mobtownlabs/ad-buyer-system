@@ -8,6 +8,11 @@ import json
 from pathlib import Path
 from typing import Optional
 
+# Load .env file before any other imports that might need env vars
+from dotenv import find_dotenv, load_dotenv
+
+load_dotenv(find_dotenv(usecwd=True))
+
 import typer
 from rich.console import Console
 from rich.panel import Panel
@@ -343,7 +348,8 @@ def chat() -> None:
     """Start interactive chat session with the buyer agent.
 
     Launch a conversational interface to interact with the ad buying system
-    using natural language.
+    using natural language. Connects to all seller agents configured in
+    SELLER_ENDPOINTS environment variable.
     """
     from ..chat.main import ChatInterface
 
@@ -360,7 +366,27 @@ def chat() -> None:
         )
     )
 
-    chat_interface = ChatInterface()
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+    ) as progress:
+        progress.add_task("Connecting to seller agents...", total=None)
+        chat_interface = ChatInterface()
+
+    # Show connected sellers
+    sellers = chat_interface.get_connected_sellers()
+    if sellers:
+        console.print("\n[bold]Connected Seller Agents:[/bold]")
+        for s in sellers:
+            status = "[green]✓[/green]" if s["connected"] else f"[red]✗ {s['error'][:30]}[/red]"
+            console.print(f"  {status} [cyan]{s['name']}[/cyan] ({s['url']})")
+            tools = s["capabilities"].get("tools", [])
+            if tools:
+                console.print(f"      Tools: [dim]{', '.join(tools)}[/dim]")
+        console.print()
+    else:
+        console.print("[yellow]No sellers configured. Add SELLER_ENDPOINTS to .env[/yellow]")
 
     while True:
         try:

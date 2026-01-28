@@ -6,7 +6,11 @@
 from functools import lru_cache
 from typing import Optional
 
+from dotenv import find_dotenv
 from pydantic_settings import BaseSettings
+
+# Find .env file by searching up from current working directory
+_ENV_FILE = find_dotenv(usecwd=True)
 
 
 class Settings(BaseSettings):
@@ -15,10 +19,24 @@ class Settings(BaseSettings):
     # API Keys
     anthropic_api_key: str = ""
 
-    # OpenDirect API Configuration
+    # Seller Agent Endpoints (comma-separated list of MCP/A2A server URLs)
+    # Each endpoint should implement IAB Tech Lab OpenDirect/AdCOM standards
+    seller_endpoints: str = ""
+
+    # OpenDirect API Configuration (legacy single-server mode)
     opendirect_base_url: str = "http://localhost:3000/api/v2.1"
     opendirect_token: Optional[str] = None
     opendirect_api_key: Optional[str] = None
+
+    def get_seller_endpoints(self) -> list[str]:
+        """Parse seller endpoints from comma-separated string.
+
+        Returns:
+            List of seller endpoint URLs
+        """
+        if not self.seller_endpoints:
+            return []
+        return [url.strip() for url in self.seller_endpoints.split(",") if url.strip()]
 
     # LLM Settings
     default_llm_model: str = "anthropic/claude-sonnet-4-5-20250929"
@@ -42,7 +60,7 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
 
     model_config = {
-        "env_file": ".env",
+        "env_file": _ENV_FILE if _ENV_FILE else None,
         "env_file_encoding": "utf-8",
         "extra": "ignore",
     }
